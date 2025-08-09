@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Architecture {
+  id          String   @id @default(uuid())
+  name        String
+  description String?  
+  graph       Json
+  userId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  experiments Experiment[]
+  archived    Boolean  @default(false)
+}
+
+model Dataset {
+  id        String   @id @default(uuid())
+  filename  String
+  path      String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  experiments Experiment[]
+}
+
+model Experiment {
+  id             String      @id @default(uuid())
+  architecture   Architecture @relation(fields: [architectureId], references: [id])
+  architectureId String
+  dataset        Dataset     @relation(fields: [datasetId], references: [id])
+  datasetId      String
+  status         String      @default("queued")
+  config         Json?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  metrics        Metric[]
+}
+
+model Metric {
+  id           String    @id @default(uuid())
+  experiment   Experiment @relation(fields: [experimentId], references: [id])
+  experimentId String
+  step         Int
+  key          String
+  value        Float
+  createdAt    DateTime  @default(now())
+}
+
+

@@ -1,0 +1,29 @@
+{
+  "name": "ai-architect-editor",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.13.0",
+    "formidable": "^3.5.1",
+    "isomorphic-unfetch": "3.1.0",
+    "jszip": "^3.10.1",
+    "next": "13.4.8",
+    "papaparse": "^5.4.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-dropzone": "^14.2.3",
+    "reactflow": "^11.11.4",
+    "zod": "^4.0.16",
+    "zustand": "4.4.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.13.0"
+  }
+}
