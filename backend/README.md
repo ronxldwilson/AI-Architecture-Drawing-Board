@@ -5,7 +5,7 @@ Local run (Windows):
 - Create venv: `python -m venv .venv`
 - Activate: `. .venv/Scripts/activate`
 - Install deps: `pip install -r requirements.txt`
-- Start: `uvicorn app.main:app --reload --port 8001`
+- Start: `uvicorn app.main:app --reload --port 8000`
 
 Endpoints:
 - POST /generate: returns PyTorch code for a given graph

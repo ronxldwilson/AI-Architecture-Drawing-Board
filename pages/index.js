@@ -4,6 +4,7 @@ import Palette from '../components/Palette'
 import PropertyPanel from '../components/PropertyPanel'
 import DatasetUploader from '../components/DatasetUploader'
 import Toolbar from '../components/Toolbar'
+import ResultsPanel from '../components/ResultsPanel'
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
         </div>
         <div className="sidebar right">
           <PropertyPanel />
+          <ResultsPanel />
         </div>
       </div>
     </>

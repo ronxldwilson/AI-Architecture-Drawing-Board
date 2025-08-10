@@ -3,12 +3,14 @@ import { useDropzone } from 'react-dropzone'
 import Papa from 'papaparse'
 import JSZip from 'jszip'
 import { DATASET_CATALOG } from '../data/datasetCatalog'
+import useDatasetStore from '../store/useDatasetStore'
 
 export default function DatasetUploader() {
   const [fileInfo, setFileInfo] = useState(null)
   const [csvPreview, setCsvPreview] = useState(null)
   const [zipPreview, setZipPreview] = useState([])
   const [thumbs, setThumbs] = useState([])
+  const { datasets, selectedDataset, addDataset, setSelectedDataset } = useDatasetStore()
 
   const onDrop = useCallback(async (acceptedFiles) => {
     if (!acceptedFiles || acceptedFiles.length === 0) return
@@ -62,19 +64,20 @@ export default function DatasetUploader() {
       } catch (_) {}
     }
 
-    // Upload to backend placeholder
     try {
       const body = new FormData()
       body.append('file', file)
       const res = await fetch('/api/dataset/upload', { method: 'POST', body })
       if (res.ok) {
         const data = await res.json()
-        console.log('Uploaded dataset id:', data.id)
+        const newDataset = { id: data.id, name: file.name, path: data.path, type: file.name.split('.').pop() }
+        addDataset(newDataset)
+        setSelectedDataset(newDataset)
       }
     } catch (e) {
       console.warn('Upload failed (API not implemented yet).')
     }
-  }, [])
+  }, [addDataset, setSelectedDataset])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false, accept: { 'text/csv': ['.csv'], 'application/zip': ['.zip'], 'application/json': ['.json'] } })
 
@@ -111,6 +114,9 @@ export default function DatasetUploader() {
               if (res.ok) {
                 const out = await res.json()
                 setFileInfo({ name: d.filename, size: 0 })
+                const newDataset = { id: out.id, name: d.filename, path: out.path, type: d.filename.split('.').pop() }
+                addDataset(newDataset)
+                setSelectedDataset(newDataset)
               } else {
                 alert('Failed to fetch dataset')
               }
@@ -122,6 +128,24 @@ export default function DatasetUploader() {
         <input {...getInputProps()} />
         {isDragActive ? <p>Drop the file here...</p> : <p>Drag and drop CSV, JSON, or ZIP of images here, or click to select</p>}
       </div>
+      {datasets.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <label style={{ fontSize: 12, color: '#475569' }}>Selected Dataset:</label>
+          <select
+            value={selectedDataset ? selectedDataset.id : ''}
+            onChange={(e) => {
+              const ds = datasets.find(d => d.id === e.target.value)
+              setSelectedDataset(ds)
+            }}
+            style={{ width: '100%', marginTop: 4 }}
+          >
+            <option value="" disabled>Select a dataset</option>
+            {datasets.map(d => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       {fileInfo && (
         <div style={{ fontSize: 12, marginTop: 6, color: '#64748b' }}>
           Selected: {fileInfo.name} ({Math.round(fileInfo.size / 1024)} KB)

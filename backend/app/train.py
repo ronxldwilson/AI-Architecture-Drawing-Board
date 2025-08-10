@@ -55,16 +55,23 @@ def create_loss(name: str):
     return nn.CrossEntropyLoss()
 
 
-def train_loop(model: nn.Module, dataset: Dataset, epochs: int = 2, batch_size: int = 32, lr: float = 1e-3, optimizer_name: str = 'adam', loss_name: str = 'cross_entropy', device: str = 'cpu'):
+def train_loop(model: nn.Module, dataset: Dataset, epochs: int = 2, batch_size: int = 32, lr: float = 1e-3, optimizer_name: str = 'adam', loss_name: str = 'cross_entropy', device: str = 'cpu', progress_callback=None):
     device = torch.device(device)
     model.to(device)
     optimizer = create_optimizer(optimizer_name, model.parameters(), lr)
     criterion = create_loss(loss_name)
 
     # split
-    val_size = max(1, int(0.2 * len(dataset)))
-    train_size = max(1, len(dataset) - val_size)
-    train_ds, val_ds = random_split(dataset, [train_size, val_size])
+    val_percent = 0.2
+    val_size = int(val_percent * len(dataset))
+    if len(dataset) > 1 and val_size == 0:
+        val_size = 1
+    train_size = len(dataset) - val_size
+    if train_size > 0 and val_size > 0:
+        train_ds, val_ds = random_split(dataset, [train_size, val_size])
+    else:
+        train_ds = dataset
+        val_ds = dataset
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size)
 
@@ -104,7 +111,12 @@ def train_loop(model: nn.Module, dataset: Dataset, epochs: int = 2, batch_size: 
                 v_total += targets.size(0)
         val_loss = v_running_loss / max(1, v_total)
         val_acc = v_correct / max(1, v_total)
-        history.append({ 'epoch': epoch + 1, 'train_loss': train_loss, 'train_acc': train_acc, 'val_loss': val_loss, 'val_acc': val_acc })
+        
+        epoch_history = { 'epoch': epoch + 1, 'train_loss': train_loss, 'train_acc': train_acc, 'val_loss': val_loss, 'val_acc': val_acc }
+        history.append(epoch_history)
+
+        if progress_callback:
+            progress_callback(epoch_history)
 
     return history
 
